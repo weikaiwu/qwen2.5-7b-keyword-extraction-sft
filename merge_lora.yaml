@@ -1,0 +1,11 @@
+### model
+model_name_or_path: /root/autodl-tmp/models/Qwen/Qwen2.5-7B-Instruct
+adapter_name_or_path: /root/autodl-tmp/LLaMA-Factory/saves/qwen2.5_7b_lora
+template: qwen
+finetuning_type: lora
+
+### export
+export_dir: /root/autodl-tmp/models/Qwen/Qwen2.5-7B-Instruct-SFT
+export_size: 2
+export_device: cpu
+export_legacy_format: false

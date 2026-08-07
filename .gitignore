@@ -1,0 +1,23 @@
+# === 大文件 / 模型权重（不放 GitHub，避免 clone 体积爆炸） ===
+*.tar.gz
+sft_keywords_artifacts.tar.gz
+# LoRA 权重 78M，接近 GitHub 单文件上限，建议走 Git LFS 或外部存储
+**/*.safetensors
+# 训练数据可由 convert_data.py 重新生成，不入库
+data/keywords_sft_train.jsonl
+data/keywords_sft_val.jsonl
+
+# === Python 缓存 / 虚拟环境 ===
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+
+# === 编辑器 / 系统 ===
+.vscode/
+.idea/
+.DS_Store
+
+# === 日志 ===
+*.log
