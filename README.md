@@ -4,6 +4,12 @@
 
 > 一句话定位：让 7B 模型在关键词抽取任务上，精确率从 12.2% 提升到 36.1%（+194%），F1 从 0.164 提升到 0.357（+117%），并以 vLLM 高性能推理 + FastAPI 服务化对外提供能力。
 
+![LLaMA-Factory](https://img.shields.io/badge/LLaMA--Factory-0.9.5-blue)
+![vLLM](https://img.shields.io/badge/vLLM-0.26.0-green)
+![QLoRA](https://img.shields.io/badge/QLoRA-4bit%20NF4-orange)
+![FastAPI](https://img.shields.io/badge/FastAPI-async%20API-teal)
+![License](https://img.shields.io/badge/License-MIT-yellow)
+
 ---
 
 ## 技术栈
@@ -34,9 +40,11 @@
 
 ## 数据准备
 
-- 数据源：中文文本-关键词配对语料，转换为 LLaMA-Factory 的 **sharegpt** 格式（`data/keywords_sft_train.jsonl` / `keywords_sft_val.jsonl`）。
+- 数据源：中文学术文本-关键词配对语料（摘要 → 关键词），转换为 LLaMA-Factory 的 **sharegpt** 格式（`data/keywords_sft_train.jsonl` / `keywords_sft_val.jsonl`）。
 - 抽样规模：训练集 10,000 条 / 验证集 500 条（`convert_data.py`）。
+- **指令多样化**：user 侧混用多种抽取指令模板（如「关键词抽取：」「找出上文中的关键词」「抽取出文本中的关键词：」），避免模型只记住单一指令格式，提升泛化性。
 - 注册：在 `dataset_info.json` 中登记 `keywords_train` / `keywords_val`。
+- 数据样例见 `data/sample.jsonl`（20 条）；全量数据未入库，可按 `convert_data.py` 复现。
 
 ---
 
@@ -59,7 +67,7 @@ train_loss(final): 0.1594
 total_steps:      2500
 ```
 
-**关键决策说明（面试可讲）：**
+**关键决策说明：**
 
 - 选 **QLoRA 而非全参微调**：7B 全参需 ~120G 显存，QLoRA 4bit 仅需 ~6-8G，单卡消费级 GPU 即可，成本降低一个数量级。
 - `lora_rank=8`：关键词提取是相对简单的映射任务，低秩已足够拟合；rank 过大易过拟合且增加推理开销。
@@ -69,6 +77,10 @@ total_steps:      2500
 ---
 
 ## 评估结果
+
+训练损失曲线（2 轮 / 2500 步，最终 train_loss 0.1594）：
+
+![Training Loss](saves/qwen2.5_7b_lora/training_loss.png)
 
 在 500 条验证集上对比基座与微调模型（关键词集合级 P/R/F1）：
 
@@ -145,6 +157,8 @@ curl -X POST http://localhost:8080/api/extract \
 }
 ```
 
+> `elapsed_ms` 为单次低并发请求的服务端推理耗时；高并发场景下延迟包含排队等待，见下方「性能数据」章节。
+
 ### 4. 性能压测
 
 ```bash
@@ -190,18 +204,21 @@ python benchmark.py --url http://localhost:8080 --concurrency 16 --requests 200
 ```
 .
 ├── README.md                 # 项目文档
+├── LICENSE                   # MIT License
 ├── convert_data.py           # 数据转换脚本
 ├── eval_keywords.py          # P/R/F1 评估脚本
 ├── resume_train.yaml         # 训练配置（续训）
 ├── merge_lora.yaml           # LoRA 合并导出配置
-├── data/                     # 训练/验证数据集 + dataset_info.json
-├── saves/                    # LoRA 权重（adapter_model.safetensors 等）
+├── data/
+│   ├── sample.jsonl          # 数据样例（20 条）
+│   └── dataset_info.json     # LLaMA-Factory 数据集注册表
+├── saves/qwen2.5_7b_lora/    # LoRA 配置、训练日志与损失曲线
+│                             # （89M adapter 权重未入库，按上方训练配置可复现）
 └── serving/                  # 工程化部署
     ├── app.py                # FastAPI 封装服务
     ├── static/index.html     # 前端 Demo
     ├── benchmark.py          # 压测脚本
-    ├── requirements.txt
-    └── .gitignore
+    └── requirements.txt
 ```
 
 ---
