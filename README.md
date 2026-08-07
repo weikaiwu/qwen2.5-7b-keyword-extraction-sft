@@ -155,15 +155,21 @@ python benchmark.py --url http://localhost:8080 --concurrency 16 --requests 200
 
 ## 性能数据
 
-> 单卡 RTX 4090，vLLM + FastAPI 链路实测（以下为示例，需结合实际部署填写）：
+> 单卡 RTX 4090（24G），vLLM + FastAPI 链路实测：
 
 | 指标 | 数值 |
 |------|------|
-| 平均延迟 | ~90 ms |
-| P95 延迟 | ~150 ms |
-| 吞吐 QPS | ~150 (并发 16) |
+| 并发数 | 16 |
+| 请求数 | 200 |
+| 成功率 | 100% |
+| 总耗时 | 8.834 s |
+| 吞吐 QPS | 22.64 |
+| 平均延迟 | 690.9 ms |
+| P50 延迟 | 690.9 ms |
+| P95 延迟 | 1105.0 ms |
+| 最大延迟 | 1178.0 ms |
 
-*性能数据需在部署环境实测后填入，压测脚本见 `serving/benchmark.py`。*
+压测脚本：`serving/benchmark.py`。
 
 ---
 
