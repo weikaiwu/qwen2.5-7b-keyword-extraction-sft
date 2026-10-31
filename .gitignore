@@ -21,3 +21,8 @@ env/
 
 # === 日志 ===
 *.log
+
+# 个人资料不入库
+INTERVIEW*.md
+RESUME*.md
+gen_resume_docx.py
